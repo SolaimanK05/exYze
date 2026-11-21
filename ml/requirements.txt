@@ -1,0 +1,6 @@
+# Python 3.13. For a CPU-only install of torch use:
+#   pip install -r ml/requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0
+numpy==2.5.5
+pillow==13.0.0
+pytest==9.2.0
