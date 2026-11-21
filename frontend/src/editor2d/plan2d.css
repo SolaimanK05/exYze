@@ -1,0 +1,71 @@
+.plan2d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+  background: var(--surface);
+  cursor: grab;
+  /* The plan handles its own pan and pinch; stop the browser from scrolling or zooming the page instead. */
+  touch-action: none;
+}
+
+.plan2d:active {
+  cursor: grabbing;
+}
+
+.plan2d__controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: default;
+}
+
+.plan2d__controls button {
+  min-width: 36px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.plan2d__controls button:hover:not(:disabled) {
+  background: var(--paper);
+}
+
+.plan2d__controls button:disabled {
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+.plan2d__controls .plan2d__fit {
+  font-size: 13px;
+}
+
+.plan2d__scalebar {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.plan2d__scalebar-line {
+  height: 7px;
+  border: 1.5px solid var(--ink);
+  border-top: 0;
+}

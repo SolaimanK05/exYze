@@ -1,0 +1,277 @@
+/* ---- Shell ---- */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell__bar {
+  height: 52px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.shell__brand:focus-visible {
+  outline-color: var(--paper);
+}
+
+.shell__main {
+  flex: 1;
+  min-height: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 10;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ---- Pages ---- */
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.page h1 + p,
+.page h1 + .table {
+  margin-top: 8px;
+}
+
+.page h2 {
+  margin-top: 32px;
+  margin-bottom: 8px;
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.crumbs a {
+  color: var(--ink-soft);
+}
+
+.crumbs a:hover {
+  color: var(--ink);
+}
+
+.crumbs [aria-current='page'] {
+  color: var(--ink);
+}
+
+/* ---- Tables ---- */
+
+.table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+}
+
+.table th {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--paper);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.table__link {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.table__link:hover {
+  color: var(--accent-ink);
+}
+
+.pill {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pill--draft {
+  background: #e8ecf0;
+  color: var(--ink-soft);
+}
+
+.pill--in_review {
+  background: #fbefd3;
+  color: #7a4a00;
+}
+
+.pill--approved {
+  background: #d9eedf;
+  color: #1d5c36;
+}
+
+/* ---- Floor page ---- */
+
+.floor {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 52px);
+  min-height: 520px;
+}
+
+.floor__head {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+}
+
+.floor__head .crumbs {
+  margin-bottom: 0;
+}
+
+.floor__revision {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.floor__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.floor__canvas {
+  min-height: 0;
+  min-width: 0;
+  border-right: 1px solid var(--rule);
+}
+
+.floor__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.floor__note {
+  margin-top: auto;
+  font-size: 13px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 16px;
+  margin: 10px 0 0;
+}
+
+.facts dt {
+  color: var(--ink-soft);
+}
+
+.facts dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.flags {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flags li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px 0 10px 12px;
+  border-top: 1px solid var(--rule);
+  border-left: 3px solid var(--flag);
+}
+
+.flags__subject {
+  font-weight: 500;
+}
+
+@media (max-width: 760px) {
+  .floor {
+    height: auto;
+  }
+
+  .floor__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .floor__canvas {
+    height: 62dvh;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .page {
+    padding: 24px 16px 48px;
+  }
+
+  .shell__bar,
+  .floor__head {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
