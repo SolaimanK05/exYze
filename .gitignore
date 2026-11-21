@@ -27,6 +27,7 @@ npm-debug.log*
 *.onnx
 ml/data/
 ml/weights/
+ml/out/
 
 # Uploads and generated files
 uploads/
