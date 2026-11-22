@@ -5,7 +5,7 @@ Use Python 3.13, uv and curl. Start in the repository root.
 ```sh
 cd backend
 uv sync --locked
-uv run --locked python -m pytest tests ../db/tests -q -ra
+uv run --locked python -m pytest geometry/tests tests ../db/tests -q -ra
 ```
 
 Without test database connection strings, pytest reports the PostgreSQL tests as skipped.
@@ -52,7 +52,7 @@ From `backend/`, inspect the schema and run the tests with those variables set.
 
 ```sh
 psql -X "$EXYZE_TEST_DB_DSN" -c '\d project' -c '\d floor' -c '\d revision'
-uv run --locked python -m pytest tests ../db/tests -q -ra
+uv run --locked python -m pytest geometry/tests tests ../db/tests -q -ra
 ```
 
 The schema checks cover foreign keys, uniqueness, cascade deletion, positive floor height, and the revision state and approval timestamp. The API tests exercise architect isolation and confirm the role and user context clear after pooled requests.

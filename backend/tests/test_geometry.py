@@ -1,11 +1,13 @@
 import json
 from math import hypot
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from app.dev import FIXTURE_PATH
 from app.geometry import GeometryV1
+from geometry.dxf_parser import parse_dxf
 
 
 @pytest.fixture
@@ -15,6 +17,14 @@ def document():
 
 def test_fixture_round_trips(document):
     assert GeometryV1.model_validate(document).model_dump(exclude_unset=True) == document
+
+
+def test_package_a_parser_output_matches_the_geometry_contract():
+    sample = Path(__file__).parents[1] / "geometry" / "tests" / "data" / "plan01.dxf"
+    document = parse_dxf(sample, provisional_walls=True).geometry
+    validated = GeometryV1.model_validate(document)
+    assert validated.walls
+    assert validated.model_dump(exclude_unset=True) == document
 
 
 def test_fixture_opening_fits_its_wall_and_has_a_review_flag(document):

@@ -48,7 +48,13 @@ def rows(db):
         """, (floor_id, upload_id, user_id)).fetchone()
     assert state == "draft" and approved_at is None and created_at is not None
     assert parent_id is None
-    return dict(user=user_id, project=project_id, floor=floor_id, upload=upload_id, revision=revision_id)
+    return {
+        "user": user_id,
+        "project": project_id,
+        "floor": floor_id,
+        "upload": upload_id,
+        "revision": revision_id,
+    }
 
 
 @pytest.mark.parametrize(("sqlstate", "statement"), [

@@ -5,7 +5,7 @@ Use Python 3.13 and the checked-in `uv.lock`.
 ```sh
 cd backend
 uv sync --locked
-uv run --locked python -m pytest tests
+uv run --locked python -m pytest
 ```
 
 ## Geometry demo

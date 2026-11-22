@@ -10,7 +10,6 @@ from pydantic import ValidationError
 
 from app import dev
 from app.db import Principal, request_db, require_principal
-from app.dev import FIXTURE_PATH, app as dev_app
 from app.main import create_app
 
 
@@ -105,12 +104,12 @@ def test_no_pool_is_a_structured_unavailable_error():
 
 
 def test_development_revision_uses_only_the_labeled_fixture():
-    with TestClient(dev_app) as client:
+    with TestClient(dev.app) as client:
         response = client.get("/api/revisions/1")
         assert response.status_code == 200
         assert response.headers["X-Exyze-Geometry"] == "dev-fixture"
         assert response.headers["Cache-Control"] == "no-store"
-        assert response.json() == json.loads(FIXTURE_PATH.read_text())
+        assert response.json() == json.loads(dev.FIXTURE_PATH.read_text())
         assert client.get("/api/revisions/2").status_code == 404
         assert client.get("/api/projects").status_code == 404
         assert client.get("/api/revisions/invalid").status_code == 422
@@ -120,7 +119,7 @@ def test_development_app_rejects_an_invalid_fixture_at_startup(tmp_path, monkeyp
     invalid = tmp_path / "invalid.json"
     invalid.write_text('{"version": 2}')
     monkeypatch.setattr(dev, "FIXTURE_PATH", invalid)
-    with pytest.raises(ValidationError), TestClient(dev_app):
+    with pytest.raises(ValidationError), TestClient(dev.app):
         pytest.fail("The dev server started with an invalid geometry document")
 
 
