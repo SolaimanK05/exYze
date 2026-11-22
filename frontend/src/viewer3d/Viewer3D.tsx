@@ -49,6 +49,7 @@ function CameraControls({ framing, reset }: { framing: Sphere; reset: number }) 
 export default function Viewer3D({ geometry }: { geometry: Geometry }) {
   const { walls, floors, framing } = useMemo(() => buildScene(geometry), [geometry])
   const [reset, setReset] = useState(0)
+  const [touchScreen] = useState(() => window.matchMedia('(pointer: coarse)').matches)
   const groundSize = Math.max(8, framing.radius * 4)
 
   useEffect(() => () => {
@@ -63,7 +64,8 @@ export default function Viewer3D({ geometry }: { geometry: Geometry }) {
       <Canvas
         aria-label="3D floor plan"
         camera={{ fov: 42 }}
-        dpr={[1, 1.5]}
+        dpr={touchScreen ? 1 : [1, 1.5]}
+        gl={{ antialias: !touchScreen }}
         frameloop="demand"
         fallback={<p className="viewer3d__status">WebGL is unavailable. Open the 2D plan to see this floor.</p>}
       >
@@ -73,16 +75,16 @@ export default function Viewer3D({ geometry }: { geometry: Geometry }) {
 
         <mesh position={[framing.center.x, -0.015, framing.center.z]} rotation-x={-Math.PI / 2}>
           <planeGeometry args={[groundSize, groundSize]} />
-          <meshStandardMaterial color="#adbcc8" />
+          <meshBasicMaterial color="#bec8d0" />
         </mesh>
         {floors.map(({ finish, surface }) => (
           <mesh key={finish ?? 'default'} geometry={surface}>
-            <meshStandardMaterial color={finish === null ? '#dbcaad' : finishColors[Math.abs(finish) % finishColors.length]} />
+            <meshLambertMaterial color={finish === null ? '#dbcaad' : finishColors[Math.abs(finish) % finishColors.length]} />
           </mesh>
         ))}
         {walls && (
           <mesh geometry={walls}>
-            <meshStandardMaterial color="#7892aa" />
+            <meshLambertMaterial color="#7892aa" />
           </mesh>
         )}
         <CameraControls framing={framing} reset={reset} />
