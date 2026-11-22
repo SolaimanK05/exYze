@@ -1,4 +1,5 @@
 import json
+from math import hypot
 
 import pytest
 from pydantic import ValidationError
@@ -13,6 +14,25 @@ def document():
 
 
 def test_fixture_round_trips(document):
+    assert GeometryV1.model_validate(document).model_dump(exclude_unset=True) == document
+
+
+def test_fixture_opening_fits_its_wall_and_has_a_review_flag(document):
+    opening, = document["openings"]
+    wall = next(wall for wall in document["walls"] if opening["wall"] == wall["key"])
+    wall_length = hypot(wall["x2"] - wall["x1"], wall["y2"] - wall["y1"])
+    assert opening["offset"] + opening["width"] <= wall_length
+    assert opening["sill"] + opening["height"] <= wall["height"]
+    assert opening["confidence"] < 0.6
+    assert any(
+        flag["element_kind"] == "opening" and flag["element_ref"] == f"{wall['key']}/{opening['no']}"
+        for flag in document["flags"]
+    )
+
+
+def test_key_and_id_references_round_trip(document):
+    document["openings"][0]["wall"] = document["walls"][0]["id"]
+    document["items"][0]["room"] = document["rooms"][0]["id"]
     assert GeometryV1.model_validate(document).model_dump(exclude_unset=True) == document
 
 
@@ -36,9 +56,14 @@ def test_photo_import_can_omit_ids_and_rooms(document):
     (("source",), "photo"),
     (("scale",), {"m_per_px": 0.01, "method": "ocr", "confirmed": False}),
     (("walls", 0, "confidence"), 1.01),
+    (("walls", 0, "x1"), float("inf")),
+    (("walls", 0, "thickness"), 0),
     (("walls", 1, "key"), "w1"),
+    (("rooms", 0, "key"), "w1"),
     (("openings", 0, "wall"), "unknown"),
     (("openings", 0, "no"), 0),
+    (("openings", 0, "offset"), -0.1),
+    (("rooms", 0, "polygon", 0), [0, 0, 0]),
     (("rooms", 0, "walls", 0, "wall"), 999),
     (("items", 0, "room"), "unknown"),
     (("items", 0, "rotation"), 360),

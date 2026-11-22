@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
+from psycopg.rows import DictRow
 from pydantic import BaseModel, Field
 
-from ..db import RequestDB, require_project_reader
+from ..db import RequestDB, require_project_reader, require_row_security
 
 router = APIRouter(dependencies=[Depends(require_project_reader)])
 
@@ -13,7 +14,9 @@ class ProjectSummary(BaseModel):
 
 
 @router.get("/projects", response_model=list[ProjectSummary])
-def list_projects(db: RequestDB):
+def list_projects(db: RequestDB, response: Response) -> list[DictRow]:
+    require_row_security(db, "project")
+    response.headers["Cache-Control"] = "no-store"
     return db.execute("""
         SELECT project_id AS id, name, site_address
         FROM project

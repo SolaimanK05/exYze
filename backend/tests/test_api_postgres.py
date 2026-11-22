@@ -49,8 +49,11 @@ def test_project_visibility_and_transaction_context():
 
                 actor = Principal(user_id=users[1], role="architect")
                 assert client.get("/api/projects").json() == []
-                for path in (f"/api/floors/{floor}", f"/api/revisions/{revision}"):
-                    assert client.get(path).status_code == 404
+                for resource, resource_id in (("floors", floor), ("revisions", revision)):
+                    hidden = client.get(f"/api/{resource}/{resource_id}")
+                    missing = client.get(f"/api/{resource}/9223372036854775807")
+                    assert hidden.status_code == missing.status_code == 404
+                    assert hidden.json() == missing.json()
                 with app.state.pool.connection() as conn:
                     assert conn.info.backend_pid == backend_pid
                     context = conn.execute("""
@@ -61,3 +64,16 @@ def test_project_visibility_and_transaction_context():
         finally:
             seed.execute("DELETE FROM project WHERE project_id = %s", (project,))
             seed.execute("DELETE FROM app_user WHERE user_id = ANY(%s)", (users,))
+
+
+def test_core_reads_reject_a_different_database_login():
+    seed_dsn = os.getenv("EXYZE_TEST_DB_DSN")
+    if not seed_dsn:
+        pytest.skip("Provide the separate disposable fixture-writer connection")
+
+    app = create_app(seed_dsn)
+    app.dependency_overrides[require_principal] = lambda: Principal(user_id=1, role="admin")
+    with TestClient(app) as client:
+        response = client.get("/api/projects")
+    assert response.status_code == 503
+    assert response.json()["error"] == "DATABASE_UNAVAILABLE"

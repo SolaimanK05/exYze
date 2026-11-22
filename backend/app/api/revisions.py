@@ -1,8 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 
-from ..db import RequestDB, ResourceId, require_project_reader
+from ..db import RequestDB, ResourceId, require_project_reader, require_row_security
 from ..errors import ApiError
 from ..geometry import GeometryV1
 
@@ -12,6 +12,7 @@ router = APIRouter()
 def revision_document(
     id: ResourceId, _reader: Annotated[None, Depends(require_project_reader)], db: RequestDB
 ) -> GeometryV1:
+    require_row_security(db, "project", "floor", "revision")
     revision = db.execute("""
         SELECT r.revision_id
         FROM revision AS r
@@ -26,5 +27,8 @@ def revision_document(
 
 
 @router.get("/revisions/{id}", response_model=GeometryV1, response_model_exclude_unset=True)
-def get_revision(document: Annotated[GeometryV1, Depends(revision_document)]) -> GeometryV1:
+def get_revision(
+    document: Annotated[GeometryV1, Depends(revision_document)], response: Response
+) -> GeometryV1:
+    response.headers["Cache-Control"] = "no-store"
     return document

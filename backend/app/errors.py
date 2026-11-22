@@ -1,9 +1,10 @@
 import logging
+from collections.abc import Mapping
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from psycopg import Error
+from psycopg import Error, OperationalError
 from starlette.exceptions import HTTPException
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,17 @@ class ApiError(Exception):
         self.name = name
 
 
-def error_response(status: int, name: str, message: str) -> JSONResponse:
-    return JSONResponse({"error": name, "message": message}, status_code=status)
+class DatabaseUnavailable(ApiError):
+    def __init__(self):
+        super().__init__(503, "DATABASE_UNAVAILABLE", "Database is unavailable.")
+
+
+def error_response(
+    status: int, name: str, message: str, headers: Mapping[str, str] | None = None
+) -> JSONResponse:
+    response = JSONResponse({"error": name, "message": message}, status_code=status, headers=headers)
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 async def api_error(_request: Request, error: ApiError) -> JSONResponse:
@@ -46,6 +56,13 @@ async def database_error(request: Request, error: Error) -> JSONResponse:
     if mapped := SQL_ERRORS.get(error.sqlstate):
         status, name = mapped
         return error_response(status, name, error.diag.message_primary or name)
+    if (
+        (isinstance(error, OperationalError) and error.sqlstate is None)
+        or (error.sqlstate or "").startswith("08")
+        or error.sqlstate in ("57P01", "57P02", "57P03")
+    ):
+        logger.warning("Database connection unavailable (%s)", type(error).__name__)
+        return await api_error(request, DatabaseUnavailable())
     return await unexpected_error(request, error)
 
 
@@ -54,13 +71,14 @@ async def invalid_request(_request: Request, _error: RequestValidationError) -> 
 
 
 async def http_error(_request: Request, error: HTTPException) -> JSONResponse:
+    if error.status_code >= 500:
+        logger.error("Unhandled HTTP error (%s)", error.status_code)
+        return error_response(error.status_code, "INTERNAL_ERROR", "An internal error occurred.")
     name = {401: "AUTH_REQUIRED", 403: "FORBIDDEN", 404: "NOT_FOUND"}.get(
         error.status_code, "HTTP_ERROR"
     )
     message = error.detail if isinstance(error.detail, str) else "Request failed."
-    response = error_response(error.status_code, name, message)
-    response.headers.update(error.headers or {})
-    return response
+    return error_response(error.status_code, name, message, headers=error.headers)
 
 
 def register_error_handlers(app: FastAPI) -> None:
