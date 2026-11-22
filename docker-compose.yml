@@ -1,0 +1,25 @@
+name: exyze
+
+services:
+  db:
+    # PostgreSQL 18 with PostGIS 3.6. From PostgreSQL 18 the image keeps its data under
+    # /var/lib/postgresql (not .../data), so the volume is mounted one level up.
+    image: postgis/postgis:18-3.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Copy .env.example to .env first}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env first}
+      POSTGRES_DB: ${POSTGRES_DB:?Copy .env.example to .env first}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - exyze_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  exyze_pgdata:
