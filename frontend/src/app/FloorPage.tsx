@@ -104,7 +104,9 @@ export function FloorPage() {
         <aside className="floor__panel" aria-label="Plan details">
           <PlanSummary geometry={geometry} />
           <ReviewList geometry={geometry} />
-          <p className="muted floor__note">This is a sample plan. The page shows the real revision once the API is connected.</p>
+          <p className="muted floor__note">
+            This is a sample plan. <Link to="/demo/dxf">Open the parsed DXF demo.</Link>
+          </p>
         </aside>
       </div>
     </div>
