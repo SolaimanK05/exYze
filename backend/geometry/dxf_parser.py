@@ -244,7 +244,12 @@ def parse_document(doc: Drawing, provisional_walls: bool = False) -> ParseResult
             c.skip(e, str(exc))
 
     code = doc.header.get("$INSUNITS")
-    units = resolve_units(code, _extent(c))
+    units = resolve_units(
+        code,
+        _extent(c),
+        arc_radii=[a["radius"] for a in c.arcs],
+        measurement=doc.header.get("$MEASUREMENT"),
+    )
     k = units.factor
 
     lines = []
@@ -296,7 +301,7 @@ def parse_document(doc: Drawing, provisional_walls: bool = False) -> ParseResult
     ]
 
     flags = []
-    if units.assumed:
+    if units.reason:
         # review_flag.element_kind only allows wall/opening/room/item/scale
         flags.append(
             {"element_kind": "scale", "element_ref": "dxf", "reason": units.reason}
