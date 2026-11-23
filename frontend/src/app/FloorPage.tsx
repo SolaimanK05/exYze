@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 import { Link, useParams } from 'react-router'
-import { Plan2D } from '../editor2d/Plan2D'
 import { footprintFor } from '../editor2d/placeholderCatalog'
 import type { Geometry } from '../model/geometry'
 import { getFloorWithGeometry } from './api'
 import { formatDate } from './format'
 import { NotFound } from './NotFound'
+import { PlanViewport } from './PlanViewport'
 import { StatusPill } from './StatusPill'
 import { useAsync } from './useAsync'
 
@@ -99,12 +99,14 @@ export function FloorPage() {
 
       <div className="floor__body">
         <div className="floor__canvas">
-          <Plan2D geometry={geometry} />
+          <PlanViewport geometry={geometry} />
         </div>
         <aside className="floor__panel" aria-label="Plan details">
           <PlanSummary geometry={geometry} />
           <ReviewList geometry={geometry} />
-          <p className="muted floor__note">This is a sample plan. The page shows the real revision once the API is connected.</p>
+          <p className="muted floor__note">
+            This is a sample plan. <Link to="/demo/dxf">Open the parsed DXF demo.</Link>
+          </p>
         </aside>
       </div>
     </div>

@@ -1,0 +1,25 @@
+.viewer3d {
+  height: 100%;
+  position: relative;
+}
+
+.viewer3d__reset {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.viewer3d__status {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  padding: 24px;
+  color: var(--ink-soft);
+  text-align: center;
+}

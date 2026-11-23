@@ -201,6 +201,50 @@
   border-right: 1px solid var(--rule);
 }
 
+.floor__viewport {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+.floor__view-controls {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+}
+
+.floor__view-controls button {
+  min-width: 44px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.floor__view-controls button[aria-pressed='true'] {
+  border-color: var(--rule);
+  background: var(--paper);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.floor__view {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.floor__view-loading {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  color: var(--ink-soft);
+}
+
 .floor__panel {
   display: flex;
   flex-direction: column;

@@ -8,6 +8,7 @@ import './app.css'
 
 // The floor page pulls in the canvas library, so it loads only when someone opens a plan.
 const FloorPage = lazy(() => import('./FloorPage').then((m) => ({ default: m.FloorPage })))
+const DxfDemoPage = lazy(() => import('./DxfDemoPage'))
 
 export function App() {
   return (
@@ -21,6 +22,14 @@ export function App() {
             element={
               <Suspense fallback={<div className="page muted">Loading plan…</div>}>
                 <FloorPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="demo/dxf"
+            element={
+              <Suspense fallback={<div className="page muted">Loading plan…</div>}>
+                <DxfDemoPage />
               </Suspense>
             }
           />
