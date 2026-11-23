@@ -1,0 +1,125 @@
+.capture {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.capture__lead {
+  margin-top: 8px;
+  color: var(--ink-soft, #4a5866);
+}
+
+.capture__tips {
+  margin: 20px 0 0;
+  padding: 12px 16px 12px 36px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--rule, #d9dfe5);
+  border-radius: 6px;
+}
+
+.capture__tips li + li {
+  margin-top: 4px;
+}
+
+.capture__preview {
+  margin: 20px 0 0;
+}
+
+.capture__preview img {
+  display: block;
+  width: 100%;
+  max-height: 60dvh;
+  object-fit: contain;
+  background: var(--surface, #fff);
+  border: 1px solid var(--rule, #d9dfe5);
+  border-radius: 6px;
+}
+
+.capture__preview figcaption {
+  margin-top: 6px;
+  color: var(--ink-faint, #7a8794);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.capture__progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.capture__progress progress {
+  flex: 1;
+  height: 10px;
+  accent-color: var(--accent, #1d5fd1);
+}
+
+.capture__message {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--rule, #d9dfe5);
+  background: var(--surface, #fff);
+}
+
+.capture__message--good {
+  border-color: #2b7a4b;
+}
+
+.capture__message--warn {
+  border-color: var(--flag, #b86e00);
+}
+
+.capture__message--error {
+  border-color: var(--error, #a12b2b);
+  color: var(--error, #a12b2b);
+}
+
+.capture__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Both the labels that wrap a file input and the plain buttons share this look. */
+.capture__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--ink, #17212b);
+  background: var(--surface, #fff);
+  border: 1px solid var(--rule, #d9dfe5);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+}
+
+.capture__button--primary {
+  color: #fff;
+  background: var(--accent, #1d5fd1);
+  border-color: var(--accent, #1d5fd1);
+}
+
+.capture__button input[type='file'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.capture__button:focus-within {
+  outline: 2px solid var(--accent-ink, #144aa6);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .capture__actions > * {
+    flex: 1 1 100%;
+  }
+}
