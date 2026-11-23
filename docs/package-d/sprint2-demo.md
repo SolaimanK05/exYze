@@ -49,13 +49,13 @@ All three calls return HTTP 401 and `AUTH_REQUIRED`. Once E supplies verified se
 Follow the [database setup](../../db/README.md) for Shanto’s PostgreSQL 18 and PostGIS 3.6 environment. From the repository root, demonstrate the migration runner on that database.
 
 ```sh
-docker compose up -d db
+docker compose up -d --wait db
 ./db/migrate.sh
 ./db/migrate.sh status
 ./db/migrate.sh
 ```
 
-The second run should apply zero migrations. The shared runner currently has the PostGIS bootstrap. The [Package D staging notes](../../db/pending/package-d/README.md) describe how to promote the schema in the order `app_user → project → floor → upload → revision`.
+The second run should apply zero migrations. The shared runner currently has the PostGIS bootstrap. See the [Package D staging notes](../../db/pending/package-d/README.md) for the full migration order and pending owner confirmations.
 
 Once those tables are available on a disposable database, set `EXYZE_TEST_DB_DSN` for the fixture-writer login and `EXYZE_TEST_API_DSN` for `exyze_app` on the same database. The API integration tests need the grants and RLS policies on the three core tables. Set `DATABASE_URL` to a disposable PostgreSQL instance with a user allowed to create scratch databases to include E’s migration-runner tests.
 

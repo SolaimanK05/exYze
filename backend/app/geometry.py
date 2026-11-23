@@ -110,6 +110,10 @@ class GeometryV1(GeometryModel):
         keys = [element.key for element in [*self.walls, *self.rooms, *self.items]]
         if len(keys) != len(set(keys)):
             raise ValueError("Geometry keys must be unique within the document")
+        for kind, elements in (("wall", self.walls), ("room", self.rooms), ("item", self.items)):
+            stored_ids = [element.id for element in elements if element.id is not None]
+            if len(stored_ids) != len(set(stored_ids)):
+                raise ValueError(f"Stored {kind} IDs must be unique within the document")
 
         walls = {wall.key: wall.key for wall in self.walls}
         walls.update({wall.id: wall.key for wall in self.walls if wall.id is not None})

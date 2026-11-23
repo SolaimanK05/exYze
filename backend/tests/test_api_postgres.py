@@ -19,9 +19,9 @@ def test_project_visibility_and_transaction_context():
         users = [
             seed.execute("""
                 INSERT INTO app_user (email, full_name, role, password_hash)
-                VALUES (%s, %s, 'architect', 'test-only') RETURNING user_id
-                """, (f"{uuid4()}@example.invalid", name)).fetchone()[0]
-            for name in ("Owner", "Other architect")
+                VALUES (%s, %s, %s, 'test-only') RETURNING user_id
+                """, (f"{uuid4()}@example.invalid", name, role)).fetchone()[0]
+            for name, role in (("Owner", "architect"), ("Other architect", "architect"), ("Admin", "admin"))
         ]
         project, floor, revision = seed.execute("""
             WITH p AS (
@@ -54,6 +54,13 @@ def test_project_visibility_and_transaction_context():
                     missing = client.get(f"/api/{resource}/9223372036854775807")
                     assert hidden.status_code == missing.status_code == 404
                     assert hidden.json() == missing.json()
+
+                actor = Principal(user_id=users[2], role="admin")
+                assert project in {row["id"] for row in client.get("/api/projects").json()}
+                assert client.get(f"/api/floors/{floor}").status_code == 200
+                admin_revision = client.get(f"/api/revisions/{revision}")
+                assert admin_revision.status_code == 503
+                assert admin_revision.json()["error"] == "GEOMETRY_UNAVAILABLE"
                 with app.state.pool.connection() as conn:
                     assert conn.info.backend_pid == backend_pid
                     context = conn.execute("""

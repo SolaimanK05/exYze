@@ -46,6 +46,23 @@ def test_key_and_id_references_round_trip(document):
     assert GeometryV1.model_validate(document).model_dump(exclude_unset=True) == document
 
 
+def test_stored_ids_can_match_across_element_types(document):
+    wall_id = document["walls"][0]["id"]
+    document["rooms"][0]["id"] = wall_id
+    document["items"][0]["id"] = wall_id
+    assert GeometryV1.model_validate(document).model_dump(exclude_unset=True) == document
+
+
+@pytest.mark.parametrize(("collection", "kind"), [
+    ("walls", "wall"), ("rooms", "room"), ("items", "item"),
+])
+def test_rejects_duplicate_stored_ids_with_distinct_keys(document, collection, kind):
+    first = document[collection][0]
+    document[collection].append({**first, "key": "duplicate-id"})
+    with pytest.raises(ValidationError, match=rf"Stored {kind} IDs must be unique"):
+        GeometryV1.model_validate(document)
+
+
 def test_photo_import_can_omit_ids_and_rooms(document):
     document.update(
         source="photo",

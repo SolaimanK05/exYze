@@ -33,6 +33,6 @@ The shared spec leaves project and floor response fields open. The initial summa
 
 Once authorization and the schema are in place, the main revision route returns 404 for missing or inaccessible rows and 503 for accessible rows until `revision_geometry` is available. Migration prerequisites and SQL tests are documented with the [staged SQL](../db/pending/package-d/README.md).
 
-To include the pooled-connection test, set `EXYZE_TEST_DB_DSN` to a disposable database with the staged schema, test grants and RLS policies. Use a fixture-writer connection for that variable and the same database's `exyze_app` connection for `EXYZE_TEST_API_DSN`. The test creates two architects and removes them and their project afterward.
+To include the pooled-connection test, set `EXYZE_TEST_DB_DSN` to a disposable database with the staged schema, test grants and RLS policies. Use a fixture-writer connection for that variable and the same database's `exyze_app` connection for `EXYZE_TEST_API_DSN`. The test creates two architects and an admin, then removes them and their project afterward.
 
 See the [Sprint 2 demo](../docs/package-d/sprint2-demo.md) for the HTTP smoke checks and database test commands.
