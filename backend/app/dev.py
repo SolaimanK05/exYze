@@ -1,11 +1,11 @@
-"""Standalone Sprint 2 geometry demo. Run locally with no database."""
+"""Standalone Sprint 2 geometry and conversion demo. Run locally with no database."""
 
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
 
-from .api.revisions import revision_document, router
+from .api import convert, revisions
 from .db import ResourceId
 from .errors import ApiError, register_error_handlers
 from .geometry import GeometryV1
@@ -29,5 +29,6 @@ def fixture_document(id: ResourceId, request: Request, response: Response) -> Ge
 
 app = FastAPI(title="exYze dev geometry fixture", lifespan=load_fixture)
 register_error_handlers(app)
-app.include_router(router, prefix="/api")
-app.dependency_overrides[revision_document] = fixture_document
+app.include_router(revisions.router, prefix="/api")
+app.include_router(convert.router, prefix="/api")
+app.dependency_overrides[revisions.revision_document] = fixture_document

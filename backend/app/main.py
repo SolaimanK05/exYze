@@ -1,11 +1,11 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from starlette.concurrency import run_in_threadpool
 
-from .api import floors, projects, revisions
-from .db import make_pool
+from .api import convert, floors, projects, revisions
+from .db import make_pool, require_project_reader
 from .errors import register_error_handlers
 
 
@@ -26,6 +26,7 @@ def create_app(dsn: str | None = None) -> FastAPI:
     register_error_handlers(app)
     for router in (projects.router, floors.router, revisions.router):
         app.include_router(router, prefix="/api")
+    app.include_router(convert.router, prefix="/api", dependencies=[Depends(require_project_reader)])
     return app
 
 

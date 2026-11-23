@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="520" viewBox="0 0 680 520" role="img" font-family="Helvetica, Arial, sans-serif">
+<title>How exYze works and who builds each step</title>
+<desc>A plan comes in as a DXF file or a phone photo, is saved by the database and API, then shown in a 2D editor and a 3D view that stay in sync, followed by approval and sharing, and a cost estimate.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect width="680" height="520" fill="#FFFFFF"/>
+<text x="100" y="40" font-size="18" font-weight="bold" fill="#2C2C2A">How exYze works and who builds each step</text>
+
+<rect x="100" y="80" width="200" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="200" y="100" font-size="14" font-weight="bold" fill="#444441" text-anchor="middle">Read the DXF</text>
+<text x="200" y="120" font-size="12" fill="#5F5E5A" text-anchor="middle">Turjo (A)</text>
+
+<rect x="380" y="80" width="200" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="480" y="100" font-size="14" font-weight="bold" fill="#444441" text-anchor="middle">Read the photo</text>
+<text x="480" y="120" font-size="12" fill="#5F5E5A" text-anchor="middle">Shanto (E), Solaiman (B)</text>
+
+<line x1="200" y1="138" x2="200" y2="176" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="480" y1="138" x2="480" y2="176" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="100" y="180" width="480" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="340" y="200" font-size="14" font-weight="bold" fill="#444441" text-anchor="middle">Database and API</text>
+<text x="340" y="220" font-size="12" fill="#5F5E5A" text-anchor="middle">Yusuf (D), with Shanto's (E) import worker</text>
+
+<line x1="200" y1="238" x2="200" y2="276" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="480" y1="238" x2="480" y2="276" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="100" y="280" width="200" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="200" y="300" font-size="14" font-weight="bold" fill="#712B13" text-anchor="middle">2D view and editor</text>
+<text x="200" y="320" font-size="12" fill="#993C1D" text-anchor="middle">Jahid (F)</text>
+
+<rect x="380" y="280" width="200" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="480" y="300" font-size="14" font-weight="bold" fill="#444441" text-anchor="middle">3D view and editing</text>
+<text x="480" y="320" font-size="12" fill="#5F5E5A" text-anchor="middle">Rakin (C)</text>
+
+<line x1="340" y1="308" x2="374" y2="308" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="340" y1="308" x2="306" y2="308" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="340" y="296" font-size="11" fill="#5F5E5A" text-anchor="middle">in sync</text>
+
+<line x1="200" y1="338" x2="200" y2="376" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="480" y1="338" x2="480" y2="376" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="100" y="380" width="200" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="200" y="400" font-size="14" font-weight="bold" fill="#712B13" text-anchor="middle">Approve, share, comment</text>
+<text x="200" y="420" font-size="12" fill="#993C1D" text-anchor="middle">Jahid (F)</text>
+
+<rect x="380" y="380" width="200" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="480" y="400" font-size="14" font-weight="bold" fill="#444441" text-anchor="middle">Cost estimate</text>
+<text x="480" y="420" font-size="12" fill="#5F5E5A" text-anchor="middle">Rakin (C)</text>
+
+<rect x="100" y="462" width="12" height="12" rx="2" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="120" y="472" font-size="12" fill="#444441">Jahid's parts</text>
+<rect x="230" y="462" width="12" height="12" rx="2" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="250" y="472" font-size="12" fill="#444441">Teammates' parts</text>
+<text x="100" y="498" font-size="11" fill="#5F5E5A">Letters in brackets are the package each person owns (A to F).</text>
+</svg>
