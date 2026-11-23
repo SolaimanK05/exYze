@@ -2,9 +2,9 @@
 
 Shanto’s platform changes on `main` provide the migration runner and the PostGIS bootstrap. The runner currently applies only the PostGIS migration. The E-owned `app_user` and `upload` migrations are still pending, so the Package D drafts stay outside its default `db/migrations` path.
 
-## Sprint 2 Task 3 coordination
+## Sprint 2 Schema V1 coordination
 
-The owners and dependencies are documented. Requests for confirmation are out. Task 3 remains open while owners confirm landing dates and publish their migrations.
+The owners and dependencies for backlog Task #9 are documented. The default runner still has only the PostGIS bootstrap. Task #9 remains open while owners confirm landing dates and publish their migrations.
 
 | Pending work | Owner | Dependencies | Landing date |
 | --- | --- | --- | --- |
