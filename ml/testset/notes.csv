@@ -1,1 +1,29 @@
-file,taken_by,medium,paper,lighting,angle,units_printed,walls,doors_found,doors_total,windows_found,windows_total,seconds,notes
+file,medium,walls,doors_found,doors_total,doors_extra,windows_found,windows_total,windows_extra,confidence,notes
+p01,monitor,partial,,,,,,,n/a,"Old scan. Doors and windows cannot be told apart by eye, so not counted."
+p02,monitor,partial,,,,,,,n/a,"Old scan, same as p01. Pool hall has no inner walls in the mask."
+p03,monitor,ok,,,,,,,n/a,"Old palace plan, no door or window symbols. Walls closed and clean."
+p04,monitor,partial,8,18,2,11,15,3,low,"Dense modern house on a monitor. Outline found, some inner walls missing, noise at the edges."
+p05,monitor,bad,,,,,,,n/a,Magazine page. The photo and the text are read as walls. Doors are drawn as gaps.
+p06,monitor,ok,,,,,,,n/a,"Old palace plan, no door or window symbols. Walls clean."
+p07,monitor,ok,,,,,,,n/a,1900s print in the old door and window style. Outline and most inner walls found.
+p08,paper,ok,8,11,2,5,8,0,low,Dense technical drawing with a shadow. Counts are approximate.
+p09,paper,ok,5,13,1,16,19,1,low,"Dense drawing, photo rotated. Counts are approximate."
+p10,paper,ok,8,10,2,9,10,1,low,Counts are approximate.
+p11,paper,ok,3,8,0,8,8,0,medium,"Hand-drawn plan. Windows all found, doors mostly missed."
+p12,paper,ok,11,13,1,10,11,1,low-medium,Counts are approximate.
+p13,paper,ok,4,5,0,9,9,0,high,Clean case. Missed only the toilet door.
+p14,paper,ok,14,22,6,9,12,2,low,Dense French plan. Counts are approximate.
+p15,paper,partial,4,20,2,20,25,2,low,Dense plan with a shadow. Left part of the walls missed. Most doors missed. Counts are approximate.
+p16,paper,ok,12,16,2,15,18,3,low,Counts are approximate.
+p17,paper,ok,11,15,2,17,19,2,low,Counts are approximate.
+p18,paper,partial,4,5,1,3,4,4,medium,Glass walls are split into several window marks.
+p19,paper,ok,2,7,1,2,4,0,medium,Almost no doors found.
+p20,paper,ok,6,6,0,0,0,1,high,The plan draws no windows. One wrong window mark.
+p21,digital,ok,6,6,1,8,8,0,high,"Clean image, not a photo. All doors and windows found, one wrong door mark."
+p22,paper,ok,5,7,1,8,9,6,low,"Window marks are broken into pieces, so the extra count is high. Counts are approximate."
+p23,paper,partial,,,,1,3,4,low,"Plan draws no door symbols, so doors not counted. Creased paper. Counts are approximate."
+p24,paper,ok,4,7,1,9,10,4,low,Shop pillars marked as windows. Counts are approximate.
+p25,paper,partial,6,7,1,2,3,1,medium,Left part of the walls missed. Counts are approximate.
+p26,archive,partial,,,,,,,n/a,"Old archive scan. About 60 thin window marks, mostly noise. Doors and windows not counted."
+p27,archive,partial,,,,,,,n/a,Old archive scan. Doors and windows not counted.
+p30,paper,ok,5,5,0,7,7,1,high,"Own print on a desk, keyboard in frame. All doors found, one wrong window mark."
