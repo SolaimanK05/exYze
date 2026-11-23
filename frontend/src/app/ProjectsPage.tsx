@@ -8,7 +8,12 @@ export function ProjectsPage() {
 
   return (
     <div className="page">
-      <h1>Projects</h1>
+      <div className="page__head">
+        <h1>Projects</h1>
+        <Link to="/upload" className="button button--primary">
+          Upload a plan
+        </Link>
+      </div>
 
       {projects.status === 'loading' && <p className="muted">Loading projects…</p>}
       {projects.status === 'error' && (

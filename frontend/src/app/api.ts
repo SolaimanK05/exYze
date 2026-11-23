@@ -4,6 +4,7 @@
 
 import type { Geometry } from '../model/geometry'
 import { sampleGeometry } from '../model/sampleGeometry'
+import { NOT_A_PLAN, UNREACHABLE, errorMessage, isPlan } from '../upload/readPlan'
 
 export type RevisionState = 'draft' | 'in_review' | 'approved'
 
@@ -65,4 +66,61 @@ export async function getFloorWithGeometry(
   const floor = project?.floors.find((f) => f.id === floorId)
   if (!project || !floor) return null
   return { project, floor, geometry: sampleGeometry }
+}
+
+/** A failed convert, with a sentence that can be shown as it is. */
+export class ConvertError extends Error {
+  name = 'ConvertError'
+}
+
+/**
+ * POST /api/convert (real, not a placeholder): uploads a DXF or a photo and returns the plan.
+ * Nothing is saved. onProgress gets 0 to 1 while the file is sent; at 1 the server is converting.
+ * Aborting the signal cancels the upload and rejects with an AbortError.
+ *
+ * It uses XMLHttpRequest because fetch() can't report how much of an upload has been sent.
+ */
+export function convertPlan(file: File, onProgress: (fraction: number) => void, signal: AbortSignal): Promise<Geometry> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    const abort = () => xhr.abort()
+
+    xhr.open('POST', '/api/convert')
+    xhr.responseType = 'text'
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && event.total > 0) onProgress(event.loaded / event.total)
+    }
+    xhr.upload.onload = () => onProgress(1)
+
+    xhr.onload = () => {
+      signal.removeEventListener('abort', abort)
+      let body: unknown = null
+      try {
+        body = JSON.parse(xhr.responseText)
+      } catch {
+        // Not JSON: the proxy's own error page, for example. errorMessage handles a null body.
+      }
+      if (xhr.status !== 200) reject(new ConvertError(errorMessage(xhr.status, body)))
+      else if (!isPlan(body)) reject(new ConvertError(NOT_A_PLAN))
+      else resolve(body)
+    }
+    xhr.onerror = () => {
+      signal.removeEventListener('abort', abort)
+      reject(new ConvertError(UNREACHABLE))
+    }
+    xhr.onabort = () => {
+      signal.removeEventListener('abort', abort)
+      reject(new DOMException('The upload was cancelled.', 'AbortError'))
+    }
+
+    if (signal.aborted) {
+      reject(new DOMException('The upload was cancelled.', 'AbortError'))
+      return
+    }
+    signal.addEventListener('abort', abort)
+
+    const form = new FormData()
+    form.append('file', file)
+    xhr.send(form)
+  })
 }

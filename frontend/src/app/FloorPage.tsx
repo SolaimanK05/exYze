@@ -9,7 +9,7 @@ import { PlanViewport } from './PlanViewport'
 import { StatusPill } from './StatusPill'
 import { useAsync } from './useAsync'
 
-function PlanSummary({ geometry }: { geometry: Geometry }) {
+export function PlanSummary({ geometry }: { geometry: Geometry }) {
   const doors = geometry.openings.filter((o) => o.kind === 'door').length
   const windows = geometry.openings.length - doors
   return (
@@ -31,7 +31,7 @@ function PlanSummary({ geometry }: { geometry: Geometry }) {
   )
 }
 
-function ReviewList({ geometry }: { geometry: Geometry }) {
+export function ReviewList({ geometry }: { geometry: Geometry }) {
   return (
     <section aria-labelledby="review-title">
       <h2 id="review-title">Needs review</h2>
@@ -104,6 +104,10 @@ export function FloorPage() {
         <aside className="floor__panel" aria-label="Plan details">
           <PlanSummary geometry={geometry} />
           <ReviewList geometry={geometry} />
+          {/* Sprint 2 opens the general upload page. In Sprint 3 this uploads to this floor. */}
+          <Link to="/upload" className="button">
+            Upload a new plan
+          </Link>
           <p className="muted floor__note">
             This is a sample plan. <Link to="/demo/dxf">Open the parsed DXF demo.</Link>
           </p>

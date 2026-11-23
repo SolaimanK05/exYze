@@ -6,6 +6,8 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # Node
 node_modules/
@@ -14,6 +16,8 @@ build/
 .vite/
 *.tsbuildinfo
 npm-debug.log*
+coverage/
+*.local
 
 # Environment and secrets
 .env
@@ -38,3 +42,8 @@ uploads/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Personal notes and local AI-tool settings (never shared)
+*-notes/
+.claude/settings.local.json
+.claude/launch.json

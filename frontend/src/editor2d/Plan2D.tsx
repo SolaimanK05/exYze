@@ -35,6 +35,7 @@ const COLOR = {
   flag: '#b86e00',
   roomName: '#4a5866',
   furnitureName: '#66737f',
+  drawingText: '#7a8794',
 }
 
 const ROOM_FILL: Record<RoomType, string> = {
@@ -217,6 +218,23 @@ export function Plan2D({ geometry }: Plan2DProps) {
     return [{ key: item.key, text: footprint.name, x, y }]
   })
 
+  // Until rooms exist (Sprint 3), show the drawing's own text so an imported plan still has names.
+  // It is raw DXF text, so it is drawn smaller and fainter than room names, and a label that would
+  // overlap one already placed is skipped.
+  const drawingLabels: { key: string; text: string; x: number; y: number }[] = []
+  if (geometry.rooms.length === 0) {
+    const placed: Box[] = []
+    geometry.labels.forEach((label, i) => {
+      const text = label.text.split('\n')[0].trim()
+      if (!text) return
+      const [x, y] = toPixels([label.x, label.y])
+      const box = textBox(x, y, text, 6.4, 14)
+      if (placed.some((p) => boxesOverlap(p, box))) return
+      placed.push(box)
+      drawingLabels.push({ key: `label-${i}`, text, x, y })
+    })
+  }
+
   const description = `Floor plan with ${geometry.rooms.length} rooms, ${geometry.walls.length} walls and ${geometry.openings.length} doors and windows`
 
   return (
@@ -358,6 +376,19 @@ export function Plan2D({ geometry }: Plan2DProps) {
                 fontFamily="IBM Plex Sans, system-ui, sans-serif"
                 fontSize={11}
                 fill={COLOR.furnitureName}
+              />
+            ))}
+            {drawingLabels.map((label) => (
+              <Text
+                key={label.key}
+                text={label.text}
+                x={label.x - 90}
+                y={label.y - 7}
+                width={180}
+                align="center"
+                fontFamily="IBM Plex Sans, system-ui, sans-serif"
+                fontSize={11.5}
+                fill={COLOR.drawingText}
               />
             ))}
           </Layer>
