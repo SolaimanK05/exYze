@@ -31,7 +31,7 @@ Term project for CSE 4510 (Software Development Lab) and CSE 4508 (RDBMS Program
 | Mahmudul Hassan Turjo | Geometry engine |
 | S. M. Solaiman Kalam | Detection and furniture |
 | Rakin Al Shahriar | 3D viewer and editing |
-| Abu Abdullah Ibn Yousuf | Database core and API |
+| Abdullah Ibn Yousuf | Database core and API |
 | Samman Rahin Shanto | Photo capture and platform |
 | Md. Jahidul Islam | 2D editor and sharing, Scrum master |
 
