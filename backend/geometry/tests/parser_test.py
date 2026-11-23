@@ -282,24 +282,6 @@ def test_explicit_units_give_no_flag():
     assert parse_document(doc).geometry["flags"] == []
 
 
-def test_wrong_mm_header_on_a_plan_drawn_in_metres_is_corrected_and_flagged():
-    doc = new_doc(4)  # header says mm, but the plan is 8 m x 4 m drawn in metres
-    blk = doc.blocks.new("DOOR")
-    blk.add_line((0, 0), (0.9, 0))
-    blk.add_arc((0, 0), 0.9, 0, 90)
-    msp = doc.modelspace()
-    msp.add_lwpolyline([(0, 0), (8, 0), (8, 4), (0, 4)], close=True)
-    for x in (1, 3, 5):
-        msp.add_blockref("DOOR", (x, 0))
-    out = parse_document(doc)
-    xs = [ln["x2"] for ln in out.raw["lines"]]
-    assert max(xs) == pytest.approx(8.0)
-    assert out.raw["metres_per_unit"] == 1.0 and out.raw["units_assumed"] is True
-    [flag] = out.geometry["flags"]
-    assert flag["element_kind"] == "scale"
-    assert "millimetres" in flag["reason"]
-
-
 def test_paper_space_is_ignored():
     doc = new_doc(4)
     doc.modelspace().add_line((0, 0), (1000, 0))

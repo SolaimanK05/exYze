@@ -36,6 +36,7 @@ Command line (prints the geometry format as JSON):
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import sys
 from dataclasses import dataclass
@@ -66,20 +67,76 @@ class ParseResult:
     raw: dict[str, Any]  # lines, arcs, inserts, skipped (Python-side only)
 
 
-def read_dxf(path: str | Path) -> Drawing:
-    """Open a DXF file. If it is damaged, fall back to ezdxf's recovery mode."""
+def _drop_bad_lwpolylines(path: str | Path) -> tuple[str, list[dict[str, str]]]:
+    """Remove LWPOLYLINEs that lack the AcDbPolyline subclass marker (some R12
+    exporters write them). Returns the cleaned DXF text and what was dropped.
+
+    The file is read as latin-1 so every byte survives; non-ASCII text in such
+    files (for example accented room names) may therefore come out garbled.
+    That is acceptable for geometry, but check labels on files that land here.
+    """
+    lines = Path(path).read_text(encoding="latin-1").splitlines()
+    pairs = [(lines[i].strip(), lines[i + 1]) for i in range(0, len(lines) - 1, 2)]
+    chunks: list[list[tuple[str, str]]] = []
+    cur: list[tuple[str, str]] = []
+    for code, val in pairs:
+        if code == "0" and cur:
+            chunks.append(cur)
+            cur = []
+        cur.append((code, val))
+    if cur:
+        chunks.append(cur)
+
+    kept: list[list[tuple[str, str]]] = []
+    skipped: list[dict[str, str]] = []
+    for ch in chunks:
+        is_lw = ch[0][0] == "0" and ch[0][1].strip() == "LWPOLYLINE"
+        has_marker = any(c == "100" and v.strip() == "AcDbPolyline" for c, v in ch)
+        if is_lw and not has_marker:
+            handle = next((v.strip() for c, v in ch if c == "5"), "")
+            skipped.append(
+                {
+                    "type": "LWPOLYLINE",
+                    "handle": handle,
+                    "reason": "missing AcDbPolyline subclass marker; dropped",
+                }
+            )
+            continue
+        kept.append(ch)
+    text = "\n".join(f"{c}\n{v}" for ch in kept for c, v in ch) + "\n"
+    return text, skipped
+
+
+def read_dxf(path: str | Path) -> tuple[Drawing, list[dict[str, str]]]:
+    """Open a DXF file. Returns the document and any entities dropped to read it.
+
+    Order of attempts: normal read, ezdxf recovery mode, then a text-level
+    clean-up that drops marker-less LWPOLYLINEs. Nothing is dropped silently:
+    the caller gets the list.
+    """
     try:
-        return ezdxf.readfile(str(path))
-    except (DXFError, OSError):
+        return ezdxf.readfile(str(path)), []
+    except (DXFError, OSError) as first_error:
+        err = first_error
+    try:
         from ezdxf import recover
 
         doc, _auditor = recover.readfile(str(path))
-        return doc
+        return doc, []
+    except (DXFError, OSError):
+        pass
+    text, skipped = _drop_bad_lwpolylines(path)
+    if not skipped:
+        raise err  # nothing we know how to repair
+    return ezdxf.read(io.StringIO(text)), skipped
 
 
 def parse_dxf(path: str | Path, provisional_walls: bool = False) -> ParseResult:
     """Parse a DXF file into the geometry format."""
-    return parse_document(read_dxf(path), provisional_walls=provisional_walls)
+    doc, dropped = read_dxf(path)
+    result = parse_document(doc, provisional_walls=provisional_walls)
+    result.raw["skipped"] = dropped + result.raw["skipped"]
+    return result
 
 
 # --------------------------------------------------------------------------
@@ -136,6 +193,8 @@ class _Collector:
                 self.add_geometry(part, origin, layer, depth)
         elif kind == "INSERT":  # only reached for blocks nested inside blocks
             self.add_insert(e, depth=depth + 1, origin=origin)
+        elif kind in ("TEXT", "MTEXT"):  # text inside an exploded block
+            self.add_text(e)
 
     # -- inserts ----------------------------------------------------------
     def add_insert(self, ins: DXFEntity, depth: int = 0, origin: str = "") -> None:
@@ -338,11 +397,14 @@ def lines_to_provisional_walls(lines: list[dict[str, Any]]) -> list[dict[str, An
     """Turn raw lines into low-confidence walls so 2D/3D can draw something.
 
     Uses lines drawn directly in model space (not inside blocks, which are
-    mostly furniture). If any of those are on a layer that looks like a wall
+    mostly furniture). If there are none (the whole plan is one block), the
+    block lines are used instead. If any of those are on a layer that looks like a wall
     layer, only those are used. Each wall gets confidence 0.5 and the default
     thickness, as the spec says for unpaired lines.
     """
     candidates = [ln for ln in lines if not ln["origin"].startswith("block:")]
+    if not candidates:  # the whole plan is drawn inside a block
+        candidates = lines
     hinted = [ln for ln in candidates if ln["layer_hint"]]
     chosen = hinted or candidates
     return [
