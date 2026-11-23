@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-and-database:
+    name: Backend and database
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgis/postgis:18-3.6
+        env:
+          POSTGRES_USER: exyze
+          POSTGRES_PASSWORD: exyze_ci
+          POSTGRES_DB: exyze
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U exyze -d exyze"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://exyze:exyze_ci@localhost:5432/exyze
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Make sure psql is installed
+        run: command -v psql || (sudo apt-get update && sudo apt-get install -y postgresql-client)
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      # Run from backend/ so ruff treats geometry/ as the project's own code when sorting imports.
+      - name: Lint
+        working-directory: backend
+        run: uv run ruff check . ../db
+
+      - name: Apply migrations
+        run: bash db/migrate.sh
+
+      - name: Show database versions
+        run: psql "$DATABASE_URL" -tAc "SELECT version(); SELECT postgis_full_version();"
+
+      - name: Backend tests
+        working-directory: backend
+        run: uv run pytest
+
+      - name: Database tests
+        run: uv run --project backend pytest db/tests
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # The frontend does not exist on main yet. Until its package-lock.json is merged, this job
+      # passes without doing anything, and starts checking on the first pull request after that.
+      - name: Look for the frontend
+        id: present
+        working-directory: .
+        run: echo "found=${{ hashFiles('frontend/package-lock.json') != '' }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v7
+        if: steps.present.outputs.found == 'true'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        if: steps.present.outputs.found == 'true'
+        run: npm ci
+
+      - name: Lint
+        if: steps.present.outputs.found == 'true'
+        run: npm run lint
+
+      - name: Tests
+        if: steps.present.outputs.found == 'true'
+        run: npm test
+
+      - name: Build
+        if: steps.present.outputs.found == 'true'
+        run: npm run build
