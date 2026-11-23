@@ -10,7 +10,7 @@ import pytest
 def db():
     dsn = os.getenv("EXYZE_TEST_DB_DSN")
     if not dsn:
-        pytest.skip("Set EXYZE_TEST_DB_DSN to a disposable database with the staged schema")
+        pytest.skip("Set EXYZE_TEST_DB_DSN to a disposable database with the schema under test")
     with psycopg.connect(dsn) as connection:
         try:
             yield connection
@@ -19,7 +19,7 @@ def db():
 
 
 @pytest.fixture
-def rows(db):
+def project_floor_rows(db):
     user_id = db.execute("""
         INSERT INTO app_user (email, full_name, role, password_hash)
         VALUES (%s, 'Package D test', 'architect', 'test-only') RETURNING user_id
@@ -38,20 +38,24 @@ def rows(db):
         VALUES (%s, 0, 'Ground') RETURNING floor_id, default_height_m
         """, (project_id,)).fetchone()
     assert height == Decimal("3.00")
+    return {"user": user_id, "project": project_id, "floor": floor_id}
+
+
+@pytest.fixture
+def revision_rows(db, project_floor_rows):
     upload_id = db.execute("""
         INSERT INTO upload (floor_id, uploaded_by, source, file_path)
-        VALUES (%s, %s, 'dxf', 'test.dxf') RETURNING upload_id
-        """, (floor_id, user_id)).fetchone()[0]
+        VALUES (%(floor)s, %(user)s, 'dxf', 'test.dxf') RETURNING upload_id
+        """, project_floor_rows).fetchone()[0]
     revision_id, state, approved_at, created_at, parent_id = db.execute("""
         INSERT INTO revision (floor_id, rev_no, upload_id, created_by)
-        VALUES (%s, 1, %s, %s) RETURNING revision_id, state, approved_at, created_at, parent_id
-        """, (floor_id, upload_id, user_id)).fetchone()
+        VALUES (%(floor)s, 1, %(upload)s, %(user)s)
+        RETURNING revision_id, state, approved_at, created_at, parent_id
+        """, {**project_floor_rows, "upload": upload_id}).fetchone()
     assert state == "draft" and approved_at is None and created_at is not None
     assert parent_id is None
     return {
-        "user": user_id,
-        "project": project_id,
-        "floor": floor_id,
+        **project_floor_rows,
         "upload": upload_id,
         "revision": revision_id,
     }
@@ -81,6 +85,14 @@ def rows(db):
                  VALUES (%(project)s, 1, 'Zero', 0)"""),
     ("23514", """INSERT INTO floor (project_id, level_no, name, default_height_m)
                  VALUES (%(project)s, 1, 'Negative', -1)"""),
+])
+def test_project_floor_rejected_insert(db, project_floor_rows, sqlstate, statement):
+    with pytest.raises(psycopg.Error) as error, db.transaction():
+        db.execute(statement, project_floor_rows)
+    assert error.value.sqlstate == sqlstate
+
+
+@pytest.mark.parametrize(("sqlstate", "statement"), [
     ("23503", "INSERT INTO revision (floor_id, rev_no, created_by) VALUES (-1, 2, %(user)s)"),
     ("23503", "INSERT INTO revision (floor_id, rev_no, created_by) VALUES (%(floor)s, 2, -1)"),
     ("23502", "INSERT INTO revision (floor_id, rev_no, created_by) VALUES (NULL, 2, %(user)s)"),
@@ -110,43 +122,57 @@ def rows(db):
     ("23514", """INSERT INTO revision (floor_id, rev_no, created_by, state, approved_at)
                  VALUES (%(floor)s, 2, %(user)s, 'in_review', now())"""),
 ])
-def test_rejected_insert(db, rows, sqlstate, statement):
+def test_revision_rejected_insert(db, revision_rows, sqlstate, statement):
     with pytest.raises(psycopg.Error) as error, db.transaction():
-        db.execute(statement, rows)
+        db.execute(statement, revision_rows)
     assert error.value.sqlstate == sqlstate
 
 
-def test_floor_levels_and_revision_numbers_are_scoped(db, rows):
+def test_project_floor_levels_are_scoped(db, project_floor_rows):
     height = db.execute("""
         INSERT INTO floor (project_id, level_no, name, default_height_m)
         VALUES (%(project)s, 1, 'First', 2.75) RETURNING default_height_m
-        """, rows).fetchone()[0]
+        """, project_floor_rows).fetchone()[0]
     assert height == Decimal("2.75")
-    other_floor, other_height = db.execute("""
+    other_height = db.execute("""
         WITH other_project AS (
             INSERT INTO project (owner_id, name)
             VALUES (%(user)s, 'Other') RETURNING project_id
         )
         INSERT INTO floor (project_id, level_no, name)
         SELECT project_id, 0, 'Ground' FROM other_project
-        RETURNING floor_id, default_height_m
-        """, rows).fetchone()
+        RETURNING default_height_m
+        """, project_floor_rows).fetchone()[0]
     assert other_height == Decimal("3.00")
+
+
+def test_project_floor_delete_cascades(db, project_floor_rows):
+    db.execute("DELETE FROM project WHERE project_id = %(project)s", project_floor_rows)
+    assert db.execute(
+        "SELECT 1 FROM floor WHERE floor_id = %(floor)s", project_floor_rows,
+    ).fetchone() is None
+
+
+def test_revision_number_scope_and_approval(db, revision_rows):
+    other_floor = db.execute("""
+        INSERT INTO floor (project_id, level_no, name)
+        VALUES (%(project)s, 1, 'First') RETURNING floor_id
+        """, revision_rows).fetchone()[0]
     db.execute("""
         INSERT INTO revision (floor_id, rev_no, created_by) VALUES (%s, 1, %s)
-        """, (other_floor, rows["user"]))
+        """, (other_floor, revision_rows["user"]))
 
     child = db.execute("""
         INSERT INTO revision (floor_id, rev_no, parent_id, created_by, state)
         VALUES (%(floor)s, 2, %(revision)s, %(user)s, 'in_review')
         RETURNING parent_id, state, approved_at, upload_id
-        """, rows).fetchone()
-    assert child == (rows["revision"], "in_review", None, None)
+        """, revision_rows).fetchone()
+    assert child == (revision_rows["revision"], "in_review", None, None)
     state, approved_at = db.execute("""
         INSERT INTO revision (floor_id, rev_no, parent_id, created_by, state, approved_at)
         VALUES (%(floor)s, 3, %(revision)s, %(user)s, 'approved', now())
         RETURNING state, approved_at
-        """, rows).fetchone()
+        """, revision_rows).fetchone()
     assert state == "approved" and approved_at is not None
 
 
@@ -154,11 +180,13 @@ def test_floor_levels_and_revision_numbers_are_scoped(db, rows):
     "DELETE FROM project WHERE project_id = %(project)s",
     "DELETE FROM floor WHERE floor_id = %(floor)s",
 ])
-def test_delete_cascades_to_floor_and_revision(db, rows, delete_from):
+def test_revision_delete_cascades(db, revision_rows, delete_from):
     db.execute("""
         INSERT INTO revision (floor_id, rev_no, parent_id, created_by)
         VALUES (%(floor)s, 2, %(revision)s, %(user)s)
-        """, rows)
-    db.execute(delete_from, rows)
-    assert db.execute("SELECT 1 FROM floor WHERE floor_id = %(floor)s", rows).fetchone() is None
-    assert db.execute("SELECT 1 FROM revision WHERE floor_id = %(floor)s", rows).fetchone() is None
+        """, revision_rows)
+    db.execute(delete_from, revision_rows)
+    assert db.execute("SELECT 1 FROM floor WHERE floor_id = %(floor)s", revision_rows).fetchone() is None
+    assert db.execute(
+        "SELECT 1 FROM revision WHERE floor_id = %(floor)s", revision_rows,
+    ).fetchone() is None

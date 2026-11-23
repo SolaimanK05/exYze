@@ -46,7 +46,18 @@ All three calls return HTTP 401 and `AUTH_REQUIRED`. Once E supplies verified se
 
 ## Database evidence
 
-The [migration staging notes](../../db/pending/package-d/README.md) give the order `app_user → project → floor → upload → revision`. Against an already migrated disposable test database, set `EXYZE_TEST_DB_DSN` for the fixture-writer login and set `EXYZE_TEST_API_DSN` for `exyze_app` on the same database. The API integration tests need the expected grants and RLS policies on the three core tables.
+Follow the [database setup](../../db/README.md) for Shanto’s PostgreSQL 18 and PostGIS 3.6 environment. From the repository root, demonstrate the migration runner on that database.
+
+```sh
+docker compose up -d db
+./db/migrate.sh
+./db/migrate.sh status
+./db/migrate.sh
+```
+
+The second run should apply zero migrations. The shared runner currently has the PostGIS bootstrap. The [Package D staging notes](../../db/pending/package-d/README.md) describe how to promote the schema in the order `app_user → project → floor → upload → revision`.
+
+Once those tables are available on a disposable database, set `EXYZE_TEST_DB_DSN` for the fixture-writer login and `EXYZE_TEST_API_DSN` for `exyze_app` on the same database. The API integration tests need the grants and RLS policies on the three core tables. Set `DATABASE_URL` to a disposable PostgreSQL instance with a user allowed to create scratch databases to include E’s migration-runner tests.
 
 From `backend/`, inspect the schema and run the tests with those variables set.
 
@@ -55,4 +66,4 @@ psql -X "$EXYZE_TEST_DB_DSN" -c '\d project' -c '\d floor' -c '\d revision'
 uv run --locked python -m pytest geometry/tests tests ../db/tests -q -ra
 ```
 
-The schema checks cover foreign keys, uniqueness, cascade deletion, positive floor height, and the revision state and approval timestamp. The API tests exercise architect isolation and confirm the role and user context clear after pooled requests.
+The schema checks cover foreign keys, uniqueness, cascade deletion, positive floor height, and the revision state and approval timestamp. The API tests exercise architect isolation and confirm the role and user context clear after pooled requests. For an earlier-stage database with only `app_user`, `project` and `floor`, run the project and floor subset in the staging notes.
