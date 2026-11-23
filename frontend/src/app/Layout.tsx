@@ -14,6 +14,9 @@ export function Layout() {
           </svg>
           <span>exYze</span>
         </Link>
+        <Link to="/upload" className="shell__action">
+          Upload a plan
+        </Link>
       </header>
       <main id="main" className="shell__main">
         <Outlet />
